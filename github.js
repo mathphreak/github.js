@@ -47,8 +47,9 @@
 	function smartGetRepo(user, repo, callback) {
 		if (callback === undefined) {
 			callback = repo;
-			repo = user.split("/")[1];
-			user = user.split("/")[0];
+			var splitted = user.split("/");
+			repo = splitted[1];
+			user = splitted[0];
 		}
 		getRepo(user, repo, callback);
 	}
