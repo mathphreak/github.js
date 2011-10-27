@@ -1,5 +1,7 @@
+/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, undef:true, curly:true, browser:true, indent:4, maxerr:100, white: false */
+
 /*!
- * GitHub.js - v0.0.1 - 10/21/2011
+ * GitHub.js - v0.1.0 - 10/21/2011
  * 
  * Copyrignt (c) 2011 mathphreak
  * MIT licensed.
@@ -13,15 +15,17 @@
  * http://benalman.com/about/license/
  */
 
-(function( document ) {
+(function( unglob ) {
+	"use strict";
 	var name = 'GitHub',
-	  global = this,
+	  glob = this,
+	  global = (!glob ? unglob : this),
 	  oldGH = global.GH,
 	  oldN = global[name],
-	  index = 0
+	  index = 0;
 
 	function sendJSON(url, callback, paramName) {
-		paramName || (paramName = "callback");
+		paramName = (paramName === undefined ? "callback" : paramName);
 		var callbackName = "oMrhlNvOohgMTPgNXLmUGitHubJScallbacknumber" + index++;
 		global[callbackName] = function(json) {
 			callback(json.data);
@@ -29,7 +33,7 @@
 		var script = document.createElement("script");
 		script.src = url + "?" + paramName + "=" + callbackName;
 		var head = document.getElementsByTagName("head")[0];
-		head.append(script);
+		head.appendChild(script);
 	}
 	
 	function get(path, callback) {
@@ -57,11 +61,15 @@
 		get("/orgs/" + org + "/repos", callback);
 	}
 	
+	function getUser(name, callback) {
+		get("/users/" + name, callback);
+	}
+	
 	function getRepoList(name, callback) {
 		getUser(name, function(data) {
-			if (data.type == "User") {
-				getUserRepoList(user, callback);
-			} else if (data.type == "Organization") {
+			if (data.type === "User") {
+				getUserRepoList(name, callback);
+			} else if (data.type === "Organization") {
 				getOrgRepoList(name, callback);
 			} else {
 				throw "User type not User or Organization but '" + data.type + "'";
@@ -73,9 +81,7 @@
 	
 	GH.getRepoList = getRepoList;
 	GH.getRepo = smartGetRepo;
-
-	// Create a global reference to our library.
-	global.GH = global[name] = GH;
+	GH.getUser = getUser;
 
 	// Calling .noConflict will restore the global GH to its previous value.
 	// Passing true will do that AND restore the full global name as well.
@@ -87,4 +93,7 @@
 		global.GH = oldGH;
 		return GH;
 	};
-})(document);
+
+	// Create a global reference to our library.
+	global.GH = global[name] = GH;
+})(window);
